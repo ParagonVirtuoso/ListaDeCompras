@@ -24,11 +24,6 @@ struct ListaDeComprasApp: App {
         WindowGroup {
             ContentView()
                 .preferredColorScheme(isDarkMode ? .dark : .light)
-                .overlay(alignment: .topTrailing) {
-                    ThemeSwitcher(isDarkMode: $isDarkMode)
-                        .padding(.top,38)
-                        .padding(.trailing, 16)
-                }
         }
         .modelContainer(sharedModelContainer)
     }
