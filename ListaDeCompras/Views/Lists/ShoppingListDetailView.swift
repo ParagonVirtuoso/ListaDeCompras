@@ -5,6 +5,7 @@ struct ShoppingListDetailView: View {
     let list: ShoppingList
     @StateObject private var viewModel: ItemViewModel
     @State private var newItemName = ""
+    @State private var editingItem: ShoppingItem?
     
     init(list: ShoppingList, modelContext: ModelContext) {
         self.list = list
@@ -26,25 +27,39 @@ struct ShoppingListDetailView: View {
                         
                         Spacer()
                         
-                        Text("Qtd: \(item.quantity)")
-                            .foregroundColor(.secondary)
+                        QuantityStepperView(quantity: Binding(
+                            get: { item.quantity },
+                            set: { viewModel.updateItemQuantity(item, quantity: $0) }
+                        ))
                     }
-                }
-                .onDelete { indexSet in
-                    for index in indexSet {
-                        viewModel.removeItem(viewModel.items[index])
+                    .swipeActions(edge: .trailing) {
+                        Button(role: .destructive) {
+                            viewModel.removeItem(item)
+                        } label: {
+                            Label("Deletar", systemImage: "trash")
+                        }
                     }
                 }
             }
             
             Section {
-                HStack {
+                VStack(spacing: 10) {
                     TextField("Novo item", text: $newItemName)
+                    
+                    if !newItemName.isEmpty {
+                        HStack {
+                            Text("Quantidade:")
+                            QuantityStepperView(quantity: $viewModel.newItemQuantity)
+                        }
+                    }
+                    
                     Button("Adicionar") {
-                        viewModel.addItem(name: newItemName)
+                        viewModel.addItem(name: newItemName, quantity: viewModel.newItemQuantity)
                         newItemName = ""
                     }
                     .disabled(newItemName.isEmpty)
+                    .frame(maxWidth: .infinity)
+                    .buttonStyle(.borderedProminent)
                 }
             }
         }

@@ -5,6 +5,7 @@ import SwiftData
 class ItemViewModel: ObservableObject {
     @Published var items: [ShoppingItem] = []
     @Published var errorMessage: String?
+    @Published var newItemQuantity: Int = 1
     
     private let modelContext: ModelContext
     private let list: ShoppingList
@@ -22,8 +23,20 @@ class ItemViewModel: ObservableObject {
         do {
             try modelContext.save()
             items = list.items
+            newItemQuantity = 1
         } catch {
             errorMessage = "Erro ao adicionar item: \(error.localizedDescription)"
+        }
+    }
+    
+    func updateItemQuantity(_ item: ShoppingItem, quantity: Int) {
+        item.quantity = quantity
+        
+        do {
+            try modelContext.save()
+            items = list.items
+        } catch {
+            errorMessage = "Erro ao atualizar quantidade: \(error.localizedDescription)"
         }
     }
     

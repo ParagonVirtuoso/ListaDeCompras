@@ -1,10 +1,3 @@
-//
-//  ListaDeComprasUITestsLaunchTests.swift
-//  ListaDeComprasUITests
-//
-//  Created by Denys Fernandes on 11/12/24.
-//
-
 import XCTest
 
 final class ListaDeComprasUITestsLaunchTests: XCTestCase {
