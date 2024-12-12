@@ -1,18 +1,15 @@
-//
-//  ListaDeComprasApp.swift
-//  ListaDeCompras
-//
-//  Created by Denys Fernandes on 11/12/24.
-//
-
 import SwiftUI
 import SwiftData
 
 @main
 struct ListaDeComprasApp: App {
+    @AppStorage("isDarkMode") private var isDarkMode = false
+    
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
+            ShoppingList.self,
+            ShoppingItem.self,
+            Category.self
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
@@ -26,6 +23,12 @@ struct ListaDeComprasApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .preferredColorScheme(isDarkMode ? .dark : .light)
+                .overlay(alignment: .topTrailing) {
+                    ThemeSwitcher(isDarkMode: $isDarkMode)
+                        .padding(.top,38)
+                        .padding(.trailing, 16)
+                }
         }
         .modelContainer(sharedModelContainer)
     }
