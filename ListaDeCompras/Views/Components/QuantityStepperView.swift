@@ -2,44 +2,50 @@ import SwiftUI
 
 struct QuantityStepperView: View {
     @Binding var quantity: Int
-    let minValue: Int
-    let maxValue: Int
-    
-    init(quantity: Binding<Int>, minValue: Int = 1, maxValue: Int = 99) {
-        self._quantity = quantity
-        self.minValue = minValue
-        self.maxValue = maxValue
-    }
+    var onUpdate: ((Int) -> Void)? = nil
     
     var body: some View {
-        HStack {
+        HStack(spacing: 12) {
             Button(action: decrementQuantity) {
                 Image(systemName: "minus.circle.fill")
-                    .foregroundColor(quantity > minValue ? Constants.Colors.primary : Constants.Colors.secondary)
+                    .foregroundColor(quantity > 1 ? Constants.Colors.primary : Constants.Colors.secondary)
+                    .font(.title3)
             }
-            .disabled(quantity <= minValue)
+            .buttonStyle(.plain)
+            .disabled(quantity <= 1)
             
             Text("\(quantity)")
                 .frame(minWidth: 30)
-                .foregroundColor(Constants.Colors.text)
+                .font(.headline)
+                .contentTransition(.numericText())
             
             Button(action: incrementQuantity) {
                 Image(systemName: "plus.circle.fill")
-                    .foregroundColor(quantity < maxValue ? Constants.Colors.primary : Constants.Colors.secondary)
+                    .foregroundColor(Constants.Colors.primary)
+                    .font(.title3)
             }
-            .disabled(quantity >= maxValue)
+            .buttonStyle(.plain)
         }
-    }
-    
-    private func incrementQuantity() {
-        if quantity < maxValue {
-            quantity += 1
+        .onChange(of: quantity) { oldValue, newValue in
+            onUpdate?(newValue)
         }
     }
     
     private func decrementQuantity() {
-        if quantity > minValue {
-            quantity -= 1
+        if quantity > 1 {
+            withAnimation(.spring(response: 0.3)) {
+                quantity -= 1
+            }
         }
     }
+    
+    private func incrementQuantity() {
+        withAnimation(.spring(response: 0.3)) {
+            quantity += 1
+        }
+    }
+}
+
+#Preview {
+    QuantityStepperView(quantity: .constant(1))
 } 

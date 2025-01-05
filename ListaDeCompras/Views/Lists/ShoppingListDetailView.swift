@@ -5,11 +5,13 @@ struct ShoppingListDetailView: View {
     let list: ShoppingList
     @StateObject private var viewModel: ItemViewModel
     @State private var newItemName = ""
-    @State private var editingItem: ShoppingItem?
+    @State private var itemToDelete: ShoppingItem? = nil
+    @State private var showingDeleteAlert = false
+    @EnvironmentObject private var toastVM: ToastViewModel
     
     init(list: ShoppingList, modelContext: ModelContext) {
         self.list = list
-        _viewModel = StateObject(wrappedValue: ItemViewModel(modelContext: modelContext, list: list))
+        _viewModel = StateObject(wrappedValue: ItemViewModel(modelContext: modelContext, list: list, toastVM: ToastViewModel()))
     }
     
     var body: some View {
@@ -27,14 +29,18 @@ struct ShoppingListDetailView: View {
                         
                         Spacer()
                         
-                        QuantityStepperView(quantity: Binding(
-                            get: { item.quantity },
-                            set: { viewModel.updateItemQuantity(item, quantity: $0) }
-                        ))
+                        QuantityStepperView(
+                            quantity: Binding(
+                                get: { item.quantity },
+                                set: { viewModel.updateItemQuantity(item, quantity: $0) }
+                            )
+                        )
+                        .frame(minWidth: 100)
                     }
                     .swipeActions(edge: .trailing) {
                         Button(role: .destructive) {
-                            viewModel.removeItem(item)
+                            itemToDelete = item
+                            showingDeleteAlert = true
                         } label: {
                             Label("Deletar", systemImage: "trash")
                         }
@@ -50,12 +56,15 @@ struct ShoppingListDetailView: View {
                         HStack {
                             Text("Quantidade:")
                             QuantityStepperView(quantity: $viewModel.newItemQuantity)
+                                .frame(minWidth: 100)
                         }
                     }
                     
                     Button("Adicionar") {
+                        let itemName = newItemName
                         viewModel.addItem(name: newItemName, quantity: viewModel.newItemQuantity)
                         newItemName = ""
+                        toastVM.showSuccess("Item '\(itemName)' adicionado com sucesso!")
                     }
                     .disabled(newItemName.isEmpty)
                     .frame(maxWidth: .infinity)
@@ -64,10 +73,19 @@ struct ShoppingListDetailView: View {
             }
         }
         .navigationTitle(list.name)
-        .alert("Erro", isPresented: .constant(viewModel.errorMessage != nil)) {
-            Button("OK") { viewModel.errorMessage = nil }
+        .alert("Confirmar exclusão", isPresented: $showingDeleteAlert) {
+            Button("Cancelar", role: .cancel) {}
+            Button("Deletar", role: .destructive) {
+                if let item = itemToDelete {
+                    let itemName = item.name
+                    viewModel.removeItem(item)
+                    toastVM.showSuccess("Item '\(itemName)' removido com sucesso!")
+                }
+            }
         } message: {
-            Text(viewModel.errorMessage ?? "")
+            if let item = itemToDelete {
+                Text("Tem certeza que deseja excluir o item '\(item.name)'? Esta ação não pode ser desfeita.")
+            }
         }
     }
 } 
