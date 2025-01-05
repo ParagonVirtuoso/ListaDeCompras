@@ -8,9 +8,11 @@ class ShoppingListViewModel: ObservableObject {
     @Published var errorMessage: String?
     
     private let modelContext: ModelContext
+    @ObservedObject var toastVM: ToastViewModel
     
-    init(modelContext: ModelContext) {
+    init(modelContext: ModelContext, toastVM: ToastViewModel) {
         self.modelContext = modelContext
+        self.toastVM = toastVM
         fetchLists()
     }
     
@@ -20,7 +22,7 @@ class ShoppingListViewModel: ObservableObject {
         do {
             lists = try modelContext.fetch(descriptor)
         } catch {
-            errorMessage = "Erro ao carregar listas: \(error.localizedDescription)"
+            toastVM.showError("Erro ao carregar listas: \(error.localizedDescription)")
         }
     }
     
@@ -31,8 +33,9 @@ class ShoppingListViewModel: ObservableObject {
         do {
             try modelContext.save()
             fetchLists()
+            toastVM.showSuccess("Lista criada com sucesso!")
         } catch {
-            errorMessage = "Erro ao salvar lista: \(error.localizedDescription)"
+            toastVM.showError("Erro ao salvar lista: \(error.localizedDescription)")
         }
     }
     
@@ -42,8 +45,9 @@ class ShoppingListViewModel: ObservableObject {
         do {
             try modelContext.save()
             fetchLists()
+            toastVM.showSuccess("Lista removida com sucesso!")
         } catch {
-            errorMessage = "Erro ao deletar lista: \(error.localizedDescription)"
+            toastVM.showError("Erro ao deletar lista: \(error.localizedDescription)")
         }
     }
 } 
